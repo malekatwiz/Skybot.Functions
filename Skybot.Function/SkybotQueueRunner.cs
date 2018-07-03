@@ -19,7 +19,7 @@ namespace Skybot.Function
         {
             log.Info($"C# ServiceBus queue trigger function processed message: {queueItem}");
 
-            var textMessage = ConvertToTextMessage(ExtractMessage(queueItem));
+            var textMessage = ConvertToTextMessage(queueItem);
             if (!string.IsNullOrEmpty(textMessage.Body))
             {
                 var reply = await skybotClient.RunQuery(textMessage);
@@ -28,7 +28,7 @@ namespace Skybot.Function
                 {
                     await skybotClient.PushMessage(new TextMessage
                     {
-                        To = textMessage.To,
+                        To = textMessage.From,
                         From = Settings.FromNumber,
                         Body = reply
                     });
@@ -36,15 +36,15 @@ namespace Skybot.Function
             }
         }
 
-        private static string ExtractMessage(string queueItem)
+        private static TextMessage ConvertToTextMessage(string queueItem)
         {
             var item = JsonConvert.DeserializeObject<dynamic>(queueItem);
-            return item.Body;
-        }
-
-        private static TextMessage ConvertToTextMessage(string item)
-        {
-            return JsonConvert.DeserializeObject<TextMessage>(item);
+            return new TextMessage
+            {
+                Body = item.Body,
+                From = item.From,
+                To = item.To
+            };
         }
     }
 }
