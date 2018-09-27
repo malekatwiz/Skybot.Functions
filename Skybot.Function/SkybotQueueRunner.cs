@@ -7,11 +7,11 @@ namespace Skybot.Function
 {
     public static class SkybotQueueRunner
     {
-        private static readonly SkybotClient skybotClient;
+        private static readonly SkybotClient SkybotClient;
 
         static SkybotQueueRunner()
         {
-            skybotClient = new SkybotClient();
+            SkybotClient = new SkybotClient();
         }
 
         [FunctionName("SkybotQueueRunner")]
@@ -22,11 +22,11 @@ namespace Skybot.Function
             var textMessage = ConvertToTextMessage(queueItem);
             if (!string.IsNullOrEmpty(textMessage.Body))
             {
-                var reply = await skybotClient.RunQuery(textMessage);
+                var reply = await SkybotClient.RunQuery(textMessage);
 
                 if (!string.IsNullOrEmpty(reply))
                 {
-                    await skybotClient.PushMessage(new TextMessage
+                    await SkybotClient.PushMessage(new TextMessage
                     {
                         To = textMessage.From,
                         From = Settings.FromNumber,

@@ -10,20 +10,20 @@ namespace Skybot.Function
 {
     public class SkybotClient
     {
-        private readonly HttpClient httpClient;
-        private readonly QueueClient queueClient;
-        private string token;
+        private readonly HttpClient _httpClient;
+        private readonly QueueClient _queueClient;
+        private string _token;
 
         public SkybotClient()
         {
-            httpClient = new HttpClient();
-            queueClient = new QueueClient(Settings.SkysendConnectionString, "outgoingtexts");
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClient = new HttpClient();
+            _queueClient = new QueueClient(Settings.SkysendConnectionString, "outgoingtexts");
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         public async Task<string> RunQuery(TextMessage message)
         {
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(_token))
             {
                 await GetToken();
             }
@@ -33,10 +33,10 @@ namespace Skybot.Function
                 message.Body
             };
 
-            httpClient.DefaultRequestHeaders.Clear();
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_token}");
 
-            var response = await httpClient.PostAsJsonAsync($"{Settings.SkybotApiUri}/api/Skybot/Process", queryObject);
+            var response = await _httpClient.PostAsJsonAsync($"{Settings.SkybotUri}/api/Skybot/Process", queryObject);
             var responseContent = await response.Content.ReadAsStringAsync();
 
             return JsonConvert.DeserializeObject<dynamic>(responseContent);
@@ -44,7 +44,7 @@ namespace Skybot.Function
 
         public Task PushMessage(TextMessage textMessage)
         {
-            return queueClient.SendAsync(new Message
+            return _queueClient.SendAsync(new Message
             {
                 To = "textBrokers",
                 Body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(textMessage))
@@ -55,15 +55,17 @@ namespace Skybot.Function
         {
             var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                {"clientId", Settings.SkybotClientId},
-                {"clientSecret", Settings.SkybotClientSecret },
-                {"identifier", Settings.SkybotClientIdentifier }
+                {"clientId", Settings.ClientId},
+                {"clientSecret", Settings.ClientSecret },
+                {"grant_type", "client_credentials" }
             });
 
-            var response = await httpClient.PostAsync($"{Settings.SkybotApiUri}/api/Skybot/token", content);
+            var response = await _httpClient.PostAsync($"{Settings.SkybotAuthUri}/connect/token", content);
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            token = JsonConvert.DeserializeObject<string>(responseContent);
+            var deserializedResponse = JsonConvert.DeserializeObject<dynamic>(responseContent);
+
+            _token = deserializedResponse.access_token;
         }
     }
 }
