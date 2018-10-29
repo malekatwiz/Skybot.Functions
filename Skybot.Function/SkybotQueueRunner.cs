@@ -38,13 +38,7 @@ namespace Skybot.Function
 
         private static TextMessage ConvertToTextMessage(string queueItem)
         {
-            var item = JsonConvert.DeserializeObject<dynamic>(queueItem);
-            return new TextMessage
-            {
-                Body = item.Body,
-                From = item.From,
-                To = item.To
-            };
+            return JsonConvert.DeserializeObject<TextMessage>(queueItem);
         }
     }
 }

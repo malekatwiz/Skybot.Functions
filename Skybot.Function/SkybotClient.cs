@@ -30,7 +30,7 @@ namespace Skybot.Function
 
             var queryObject = new
             {
-                message.Body
+                Message = message.Body
             };
 
             _httpClient.DefaultRequestHeaders.Clear();
@@ -55,8 +55,8 @@ namespace Skybot.Function
         {
             var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                {"clientId", Settings.ClientId},
-                {"clientSecret", Settings.ClientSecret },
+                {"client_id", Settings.ClientId},
+                {"client_secret", Settings.ClientSecret },
                 {"grant_type", "client_credentials" }
             });
 
