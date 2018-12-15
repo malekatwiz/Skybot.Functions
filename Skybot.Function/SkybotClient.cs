@@ -30,7 +30,7 @@ namespace Skybot.Function
 
             var queryObject = new
             {
-                Message = message.Body
+                Message = message.Message
             };
 
             _httpClient.DefaultRequestHeaders.Clear();

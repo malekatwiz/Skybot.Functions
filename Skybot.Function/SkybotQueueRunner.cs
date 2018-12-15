@@ -20,7 +20,7 @@ namespace Skybot.Function
             log.Info($"C# ServiceBus queue trigger function processed message: {queueItem}");
 
             var textMessage = ConvertToTextMessage(queueItem);
-            if (!string.IsNullOrEmpty(textMessage.Body))
+            if (!string.IsNullOrEmpty(textMessage.Message))
             {
                 var reply = await SkybotClient.RunQuery(textMessage);
 
@@ -28,9 +28,9 @@ namespace Skybot.Function
                 {
                     await SkybotClient.PushMessage(new TextMessage
                     {
-                        To = textMessage.From,
-                        From = Settings.FromNumber,
-                        Body = reply
+                        ToNumber = textMessage.FromNumber,
+                        FromNumber = Settings.FromNumber,
+                        Message = reply
                     });
                 }
             }
